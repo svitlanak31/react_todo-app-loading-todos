@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { UserWarning } from './UserWarning';
-import { USER_ID } from './api/todos';
+import { getTodos, USER_ID } from './api/todos';
 import { Todo } from './types/Todo';
-import { getTodos } from './api/todos';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -12,9 +11,9 @@ export const App: React.FC = () => {
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const fetchedTodos = await getTodos(); // змінили ім'я змінної на fetchedTodos
+        const fetchedTodos = await getTodos();
 
-        setTodos(fetchedTodos); // використовуємо нову змінну
+        setTodos(fetchedTodos);
       } catch {
         setError('Unable to load todos');
       }
@@ -70,11 +69,7 @@ export const App: React.FC = () => {
           />
 
           <form>
-            <label htmlFor="newTodo" className="todoapp__new-todo-label">
-              New Todo
-            </label>
             <input
-              id="newTodo"
               data-cy="NewTodoField"
               type="text"
               className="todoapp__new-todo"
@@ -100,6 +95,7 @@ export const App: React.FC = () => {
                   checked={todo.completed}
                 />
               </label>
+
               <span data-cy="TodoTitle" className="todo__title">
                 {todo.title}
               </span>
@@ -111,14 +107,19 @@ export const App: React.FC = () => {
               >
                 ×
               </button>
+
+              <div data-cy="TodoLoader" className="modal overlay">
+                <div className="modal-background has-background-white-ter" />
+                <div className="loader" />
+              </div>
             </div>
           ))}
         </section>
 
-        {todos.length > 0 && (
+        {filteredTodos.length > 0 && (
           <footer className="todoapp__footer" data-cy="Footer">
             <span className="todo-count" data-cy="TodosCounter">
-              {todos.filter(todo => !todo.completed).length} items left
+              {filteredTodos.filter(todo => !todo.completed).length} items left
             </span>
 
             <nav className="filter" data-cy="Filter">
@@ -154,7 +155,9 @@ export const App: React.FC = () => {
               type="button"
               className="todoapp__clear-completed"
               data-cy="ClearCompletedButton"
-              disabled={todos.filter(todo => todo.completed).length === 0}
+              disabled={
+                filteredTodos.filter(todo => todo.completed).length === 0
+              }
             >
               Clear completed
             </button>
