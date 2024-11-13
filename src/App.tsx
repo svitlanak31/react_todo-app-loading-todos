@@ -34,21 +34,16 @@ export const App: React.FC = () => {
     return undefined;
   }, [error]);
 
-  const filteredTodos = todos.filter(todo => {
-    if (statusFilter === 'All') {
-      return true;
+  const filteredTodos = (() => {
+    switch (statusFilter) {
+      case 'Active':
+        return todos.filter(todo => !todo.completed);
+      case 'Completed':
+        return todos.filter(todo => todo.completed);
+      default:
+        return todos;
     }
-
-    if (statusFilter === 'Active') {
-      return !todo.completed;
-    }
-
-    if (statusFilter === 'Completed') {
-      return todo.completed;
-    }
-
-    return true;
-  });
+  })();  
 
   const hideError = () => setError(null);
 
