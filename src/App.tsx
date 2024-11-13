@@ -2,23 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { UserWarning } from './UserWarning';
 import { USER_ID } from './api/todos';
 import { Todo } from './types/Todo';
-import { client } from './utils/fetchClient';
+import { getTodos } from './api/todos';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('All');
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const todos = await client.get<Todo[]>(`/todos?userId=${USER_ID}`);
-        setTodos(todos);
+        const fetchedTodos = await getTodos(); // змінили ім'я змінної на fetchedTodos
+
+        setTodos(fetchedTodos); // використовуємо нову змінну
       } catch {
         setError('Unable to load todos');
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -33,13 +31,23 @@ export const App: React.FC = () => {
 
       return () => clearTimeout(timer);
     }
+
     return undefined;
   }, [error]);
 
   const filteredTodos = todos.filter(todo => {
-    if (statusFilter === 'All') return true;
-    if (statusFilter === 'Active') return !todo.completed;
-    if (statusFilter === 'Completed') return todo.completed;
+    if (statusFilter === 'All') {
+      return true;
+    }
+
+    if (statusFilter === 'Active') {
+      return !todo.completed;
+    }
+
+    if (statusFilter === 'Completed') {
+      return todo.completed;
+    }
+
     return true;
   });
 
@@ -62,7 +70,11 @@ export const App: React.FC = () => {
           />
 
           <form>
+            <label htmlFor="newTodo" className="todoapp__new-todo-label">
+              New Todo
+            </label>
             <input
+              id="newTodo"
               data-cy="NewTodoField"
               type="text"
               className="todoapp__new-todo"
@@ -72,53 +84,41 @@ export const App: React.FC = () => {
         </header>
 
         <section className="todoapp__main" data-cy="TodoList">
-          {loading ? (
+          {filteredTodos.map(todo => (
             <div
-              data-cy="TodoLoader"
-              className={`loader-container ${!loading ? 'hidden' : ''}`}
+              data-cy="Todo"
+              className={`todo ${todo.completed ? 'completed' : ''}`}
+              key={todo.id}
             >
-            </div>
-          ) : (
-            filteredTodos.map(todo => (
-              <div
-                data-cy="Todo"
-                className={`todo ${todo.completed ? 'completed' : ''}`}
-                key={todo.id}
+              <label htmlFor="title" className="todo__status-label">
+                {' '}
+                <input
+                  id="title"
+                  data-cy="TodoStatus"
+                  type="checkbox"
+                  className="todo__status"
+                  checked={todo.completed}
+                />
+              </label>
+              <span data-cy="TodoTitle" className="todo__title">
+                {todo.title}
+              </span>
+
+              <button
+                type="button"
+                className="todo__remove"
+                data-cy="TodoDelete"
               >
-                <label className="todo__status-label">
-                  <input
-                    data-cy="TodoStatus"
-                    type="checkbox"
-                    className="todo__status"
-                    checked={todo.completed}
-                  />
-                </label>
-
-                <span data-cy="TodoTitle" className="todo__title">
-                  {todo.title}
-                </span>
-
-                <button
-                  type="button"
-                  className="todo__remove"
-                  data-cy="TodoDelete"
-                >
-                  ×
-                </button>
-                
-                <div data-cy="TodoLoader" className="modal overlay">
-                  <div className="modal-background has-background-white-ter" />
-                  <div className="loader" />
-                </div>
-              </div>
-            ))
-          )}
+                ×
+              </button>
+            </div>
+          ))}
         </section>
 
         {todos.length > 0 && (
           <footer className="todoapp__footer" data-cy="Footer">
             <span className="todo-count" data-cy="TodosCounter">
-            {todos.filter(todo => !todo.completed).length} items left
+              {todos.filter(todo => !todo.completed).length} items left
             </span>
 
             <nav className="filter" data-cy="Filter">
@@ -177,4 +177,3 @@ export const App: React.FC = () => {
     </div>
   );
 };
-
