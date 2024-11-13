@@ -116,10 +116,10 @@ export const App: React.FC = () => {
           ))}
         </section>
 
-        {filteredTodos.length > 0 && (
+        {todos.length > 0 && (
           <footer className="todoapp__footer" data-cy="Footer">
             <span className="todo-count" data-cy="TodosCounter">
-              {filteredTodos.filter(todo => !todo.completed).length} items left
+              {todos.filter(todo => !todo.completed).length} items left
             </span>
 
             <nav className="filter" data-cy="Filter">
